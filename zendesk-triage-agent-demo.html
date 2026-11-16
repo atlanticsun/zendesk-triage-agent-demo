@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>Zendesk Triage Agent Demo for Recorded Future</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f4; --surface:#ffffff; --surface2:#eef2ee; --ink:#12211f; --muted:#5a6b68; --line:#d9e2dc;
+  --green:#17494d; --green2:#0f766e; --green-soft:#e6f2ec; --amber-bg:#fff6d6; --amber-line:#e9c46a; --amber-ink:#5c4a08;
+  --red:#b42318; --red-bg:#fef3f2; --shadow:0 10px 30px rgba(18,33,31,.08); --radius:16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0e1514; --surface:#16201e; --surface2:#1c2a27; --ink:#eef4f1; --muted:#a7bab5; --line:#2a3d38; --green:#7dd3c8; --green2:#5eead4; --green-soft:#14332f; --amber-bg:#3a3312; --amber-line:#8a7420; --amber-ink:#fde68a; --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme: dark; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:var(--green2);text-decoration:underline;text-underline-offset:3px}
+button{font:inherit;min-height:44px;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.hero{padding:48px 0 28px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--green2)}
+h1{font-family:"IBM Plex Serif",serif;font-size:clamp(34px,6vw,58px);line-height:.95;letter-spacing:-.02em;margin:14px 0 16px;max-width:820px}
+.lede{font-size:19px;line-height:1.55;color:var(--muted);max-width:760px;margin:0}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:600}
+.pill strong{color:var(--green2)}
+.grid-hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-top:28px}
+@media(max-width:860px){.grid-hero{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:22px}
+.card h3{margin:0 0 8px;font-size:17px;line-height:1.3}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.quote{border-left:4px solid var(--green2);padding-left:16px;font-size:16px;line-height:1.6}
+.quote p{color:var(--ink);font-size:16px}
+.quote cite{display:block;margin-top:10px;font-style:normal;font-size:13px;color:var(--muted);font-weight:600}
+section{padding:28px 0}
+.sec-head{max-width:760px;margin-bottom:18px}
+.sec-head h2{font-family:"IBM Plex Serif",serif;font-size:32px;line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
+.sec-head p{color:var(--muted);margin:0;font-size:16px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.flow{grid-template-columns:1fr}}
+.flow-step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;position:relative}
+.flow-step b.num{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:14px;margin-bottom:12px}
+@media(prefers-color-scheme:dark){.flow-step b.num{color:#0e1514}}
+.flow-step h4{margin:0 0 6px;font-size:15px}
+.flow-step p{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
+.flow-step code{font-family:"IBM Plex Mono",monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:6px;display:inline-block;margin-top:8px}
+.stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.stack span{font-size:12.5px;font-weight:600;background:var(--surface2);border:1px solid var(--line);padding:7px 10px;border-radius:999px}
+.demo-shell{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+.demo-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface2);flex-wrap:wrap}
+.demo-top strong{font-size:14px}
+.demo-top span{font-size:13px;color:var(--muted)}
+.demo-grid{display:grid;grid-template-columns:340px 1fr;min-height:620px}
+@media(max-width:860px){.demo-grid{grid-template-columns:1fr}}
+.queue{border-right:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px}
+@media(max-width:860px){.queue{border-right:none;border-bottom:1px solid var(--line)}}
+.queue h4{margin:4px 4px 2px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ticket-btn{text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:72px}
+.ticket-btn.active{border-color:var(--green2);background:var(--green-soft);box-shadow:0 0 0 1px var(--green2) inset}
+.ticket-btn strong{display:block;font-size:14px;line-height:1.35;margin-bottom:4px}
+.ticket-btn span{font-size:12.5px;color:var(--muted);display:block;line-height:1.4}
+.badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:999px;background:#fee4e2;color:#7a271a;margin-left:6px;vertical-align:middle}
+.badge.p2{background:#fef0c7;color:#7a4a00}.badge.p3{background:#e0eae6;color:#17494d}
+.detail{padding:20px}
+.detail h3{margin:0 0 6px;font-size:20px;line-height:1.25}
+.meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:14px}
+.body-box{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14.5px;line-height:1.6;white-space:pre-wrap}
+.run-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+.btn-primary{background:var(--green);color:white;border:none;border-radius:999px;padding:12px 20px;font-weight:700}
+@media(prefers-color-scheme:dark){.btn-primary{color:#0e1514;background:var(--green2)}}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:11px 16px;font-weight:600}
+.status{font-size:13px;color:var(--muted)}
+.steps{display:none;flex-direction:column;gap:8px;margin:14px 0}
+.steps.show{display:flex}
+.step{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;opacity:.45}
+.step.active{opacity:1;border-color:var(--green2)}
+.step.done{opacity:1}
+.step .dot{width:22px;height:22px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.step.done .dot{background:var(--green2);color:white}
+.step small{display:block;color:var(--muted);line-height:1.45;margin-top:2px}
+.result{display:none}
+.result.show{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.result.show{animation:none} html{scroll-behavior:auto}}
+.decision{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+@media(max-width:700px){.decision{grid-template-columns:1fr 1fr}}
+.decision div{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:13px}
+.decision label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;display:block;margin-bottom:4px}
+.decision strong{font-size:15px;line-height:1.3;display:block}
+.conf-bar{height:10px;background:#cbd5d1;border-radius:999px;overflow:hidden;margin-top:8px}
+.conf-fill{height:100%;background:#0f766e;border-radius:999px;min-width:8px}
+.note{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:12px;padding:16px;color:var(--amber-ink)}
+.note-head{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.note p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:inherit}
+.note ul{margin:8px 0 0 18px;padding:0;font-size:14px;line-height:1.6}
+.reason-list{margin:12px 0;padding-left:18px;font-size:14.5px;line-height:1.6;color:var(--muted)}
+.reason-list li{margin-bottom:6px}.reason-list li strong{color:var(--ink)}
+.kb{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;background:var(--surface)}
+.kb strong{font-size:14px}.kb p{font-size:13.5px;color:var(--muted);margin:6px 0 0}
+.feedback{margin-top:16px;border-top:1px solid var(--line);padding-top:16px}
+.feedback p{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.fb-row{display:flex;flex-wrap:wrap;gap:8px}
+.fb-btn{border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:10px 16px;font-weight:600}
+.fb-btn.selected{background:var(--green);color:white;border-color:var(--green)}
+@media(prefers-color-scheme:dark){.fb-btn.selected{color:#0e1514;background:var(--green2)}}
+.fb-log{margin-top:12px;font-size:13.5px;background:var(--green-soft);border:1px solid var(--line);border-radius:10px;padding:12px;display:none}
+.fb-log.show{display:block}
+.trace{margin-top:14px;background:#0f1f1d;color:#d1fae5;border-radius:12px;padding:14px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.6;overflow:auto;white-space:pre-wrap;display:none}
+.trace.show{display:block}
+@media(prefers-color-scheme:dark){.trace{background:#0a0f0e}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.list-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.list-card h4{margin:0 0 10px}
+.list-card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px;line-height:1.6}
+.list-card li{margin-bottom:7px}.list-card li strong{color:var(--ink)}
+.table-wrap{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+tr:last-child td{border-bottom:none}
+@media(max-width:640px){table,thead,tbody,tr,th,td{display:block} thead{display:none} tr{padding:10px 0} td{border:none;padding:6px 14px} td:first-child{font-weight:700}}
+.queries{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:860px){.queries{grid-template-columns:1fr}}
+.query{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.query p{margin:0;font-size:14.5px;line-height:1.55}
+.query span{font-family:"IBM Plex Mono",monospace;font-size:11px;background:var(--surface2);padding:3px 7px;border-radius:6px;display:inline-block;margin-bottom:10px}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.timeline{grid-template-columns:1fr}}
+.tl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tl b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--green2)}
+.tl h4{margin:8px 0 6px}.tl p{margin:0;color:var(--muted);font-size:14px}
+pre.code{background:#0f1f1d;color:#e6fffa;padding:18px;border-radius:14px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.65}
+.pitch{background:var(--green);color:#eafff8;border-radius:18px;padding:26px}
+@media(prefers-color-scheme:dark){.pitch{background:#14332f}}
+.pitch h3{color:white;margin:0 0 12px;font-family:"IBM Plex Serif",serif;font-size:24px}
+.pitch p{font-size:16.5px;line-height:1.65;margin:0;color:#d7f0e8}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
+.metric{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:left}
+.metric strong{font-size:26px;display:block;line-height:1}
+.metric span{font-size:12.5px;color:var(--muted);line-height:1.4;display:block;margin-top:6px}
+footer{padding:28px 0 44px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="build">
+    <div class="sec-head">
+      <h2>How I would build it</h2>
+      <p>Five small services, each easy to test on its own. I would keep the agent narrow at first: classify, prioritize, retrieve, and suggest. I would not let it reply to customers, close tickets, or judge the quality of intelligence data in version one.</p>
+    </div>
+    <div class="flow">
+      <div class="flow-step"><b class="num">1</b><h4>Listen in Zendesk</h4><p>A Zendesk Trigger fires when a ticket is created. A webhook sends the ticket id, subject, body, requester, and organization to the agent service.</p><code>Trigger → Webhook</code></div>
+      <div class="flow-step"><b class="num">2</b><h4>Retrieve context</h4><p>The service searches Recorded Future help content, API documentation, and integration guides, plus past solved tickets. It also pulls account context such as modules licensed, integrations in use, and recent platform notices.</p><code>Vector search plus rules</code></div>
+      <div class="flow-step"><b class="num">3</b><h4>Reason with structure</h4><p>The model returns structured output only: team, priority, category, confidence, reasoning, and cited sources. Free form text alone is not accepted.</p><code>Structured JSON output</code></div>
+      <div class="flow-step"><b class="num">4</b><h4>Apply the threshold</h4><p>High confidence can route. Medium confidence suggests only. Low confidence adds a note that says what is missing and hands the ticket to a human.</p><code>Route • Suggest • Hand off</code></div>
+      <div class="flow-step"><b class="num">5</b><h4>Post and log</h4><p>The service writes a private internal note through the Zendesk API and saves the full trace to a log table for later lookup and review.</p><code>Zendesk API • Private comment</code></div>
+    </div>
+    <div class="stack">
+      <span>Zendesk Triggers and Webhooks</span><span>Zendesk API v2</span><span>Python service</span><span>Recorded Future API docs</span><span>Integration guides for Splunk, Sentinel, and Cortex XSOAR</span><span>Postgres decision log</span><span>Datadog or Splunk for traces</span><span>LLM with structured output</span>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="sec-head">
+      <h2>Run the demo</h2>
+      <p>Pick a ticket on the left, then run the agent. Each ticket is written the way a Recorded Future customer would actually write it: a security team locked out of the Portal, a Splunk integration falling behind, a licensing question on a renewal, and one vague Risk Score question the agent should refuse to guess on.</p>
+    </div>
+
+    <div class="demo-shell" aria-label="Interactive triage demo">
+      <div class="demo-top"><strong>◉ &nbsp;Zendesk • Views • New tickets</strong><span>Recorded Future support queue • Sample data • Agent in shadow mode</span></div>
+      <div class="demo-grid">
+        <div class="queue" id="queue">
+          <h4>New tickets • 4 waiting</h4>
+        </div>
+        <div class="detail">
+          <h3 id="tSubject"></h3>
+          <div class="meta" id="tMeta"></div>
+          <div class="body-box" id="tBody"></div>
+          <div class="run-row">
+            <button class="btn-primary" id="runBtn">Run Triage Agent →</button>
+            <button class="btn-ghost" id="traceBtn">View decision trace</button>
+            <span class="status" id="runStatus">Agent is idle. It will suggest only and will not route in shadow mode.</span>
+          </div>
+
+          <div class="steps" id="steps"></div>
+
+          <div class="result" id="result">
+            <div class="decision" id="decision"></div>
+            <h4 style="margin:18px 0 6px">Why the agent chose this</h4>
+            <ul class="reason-list" id="reasonList"></ul>
+            <div class="kb" id="kbBox"></div>
+
+            <h4 style="margin:20px 0 10px">What would appear in Zendesk</h4>
+            <div class="note">
+              <div class="note-head"><span>Internal note • Agent suggestion</span><span>Private • Not sent to customer</span></div>
+              <p id="noteText"></p>
+              <ul id="noteList"></ul>
+            </div>
+
+            <div class="feedback">
+              <p>Engineer feedback • One click inside the ticket</p>
+              <div class="fb-row">
+                <button class="fb-btn" data-fb="Accepted">✓ Accept suggestion</button>
+                <button class="fb-btn" data-fb="Edited">Edit and use</button>
+                <button class="fb-btn" data-fb="Rejected • Wrong team">Reject • Wrong team</button>
+                <button class="fb-btn" data-fb="Rejected • Wrong priority">Reject • Wrong priority</button>
+                <button class="fb-btn" data-fb="Rejected • Wrong article">Reject • Wrong article</button>
+              </div>
+              <div class="fb-log" id="fbLog"></div>
+            </div>
+          </div>
+
+          <div class="trace" id="traceBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics" aria-label="Example shadow mode metrics">
+      <div class="metric"><strong id="mAccept">0</strong><span>Feedback actions you took in this demo session</span></div>
+      <div class="metric"><strong>Shadow first</strong><span>Example rollout principle: measure agreement before automating any routing</span></div>
+      <div class="metric"><strong>Every ticket</strong><span>Gets a trace you can query by ticket id, team, priority, and outcome</span></div>
+      <div class="metric"><strong>Weekly</strong><span>Review the top rejected patterns with engineers and ship the top fixes</span></div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:10px">Metrics above describe the process I would measure in a real rollout: agreement rate, correct routing rate, reopen rate, and time to first assignment. This demo does not use live production data.</p>
+  </section>
+
+  <section id="feedback">
+    <div class="sec-head">
+      <h2>How feedback actually reaches the agent</h2>
+      <p>Feedback has to live where engineers already work. If correction takes more effort than doing triage by hand, they will stop correcting it and the agent will never improve.</p>
+    </div>
+    <div class="two">
+      <div class="list-card"><h4>Explicit feedback, inside the ticket</h4><ul>
+        <li><strong>Accept, edit, or reject</strong> on the agent note with one click</li>
+        <li><strong>Reason codes on reject:</strong> wrong team, wrong priority, wrong article, missing context, customer impact missed</li>
+        <li><strong>The edited version they actually used,</strong> saved next to the original suggestion so the difference is visible</li>
+        <li><strong>A short comment field</strong> for the one line that matters, for example noting that an issue is about licensing rather than the API</li>
+      </ul></div>
+      <div class="list-card"><h4>Implicit feedback, from what happens next</h4><ul>
+        <li><strong>Reassignment:</strong> did the ticket move to another team within the first hour</li>
+        <li><strong>Priority change:</strong> did an engineer raise or lower what the agent chose</li>
+        <li><strong>Reopen:</strong> did the ticket reopen after it was marked solved</li>
+        <li><strong>Customer reply:</strong> did the customer say the suggested fix did not help</li>
+        <li><strong>Time to resolution</strong> compared with tickets the agent did not touch</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="lookup">
+    <div class="sec-head">
+      <h2>How you look it up and fix the pattern</h2>
+      <p>Every decision is logged like an incident, not like a chat. That is what makes a bad week debuggable instead of anecdotal.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>What gets logged</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Ticket id, customer, product area, timestamp</td><td>Lets you slice errors by customer segment or by area, such as Portal, API, integration, or intelligence data</td></tr>
+          <tr><td>Exact ticket text the agent saw</td><td>Shows whether the signal was in the ticket at all</td></tr>
+          <tr><td>Docs retrieved and citations used</td><td>Exposes stale or wrong sources, such as an old integration guide left in the index after an API change</td></tr>
+          <tr><td>Model output, team, priority, confidence</td><td>Shows whether the error was reasoning or thresholding</td></tr>
+          <tr><td>Engineer action and reason code</td><td>Turns individual corrections into countable patterns</td></tr>
+          <tr><td>Final outcome: resolved, reassigned, reopened, escalated</td><td>Connects the suggestion to the real result</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="queries" style="margin-top:12px">
+      <div class="query"><span>LOOKUP 01</span><p><strong>Missed urgency.</strong> Show every ticket where the agent said P3 and an engineer raised it to P1. Did those tickets share a phrase the agent underweighted, such as a SOC working an active investigation without Portal access?</p></div>
+      <div class="query"><span>LOOKUP 02</span><p><strong>Stale knowledge.</strong> Show every reject tagged wrong article. Which integration guide keeps getting pulled for Splunk or Sentinel tickets, and when was it last updated?</p></div>
+      <div class="query"><span>LOOKUP 03</span><p><strong>Threshold problem.</strong> Show low confidence cases where the agent still routed, including vague Risk Score questions with no entity named. That is a threshold fix, not a model fix.</p></div>
+    </div>
+    <p style="color:var(--muted);font-size:14.5px;margin-top:14px">The rule I follow: fix the pattern, not the single ticket. If ten urgent tickets were missed because the agent missed a phrase in the subject line, I fix the prompt and the rule. If the guide is stale, I fix the source and reindex it. If the agent is confident on a topic it knows poorly, I raise the threshold for that topic.</p>
+  </section>
+
+  <section id="rollout">
+    <div class="sec-head">
+      <h2>Guardrails and rollout</h2>
+      <p>I would earn automation in stages. Each stage has a clear exit test before the next one starts.</p>
+    </div>
+    <div class="timeline">
+      <div class="tl"><b>Weeks 1 and 2</b><h4>Shadow mode</h4><p>The agent suggests and logs. Humans decide every ticket. I measure agreement rate and read every reject with engineers.</p></div>
+      <div class="tl"><b>Weeks 3 and 4</b><h4>Suggest with citations</h4><p>The note goes live in Zendesk with confidence and sources. No automatic routing yet. Feedback buttons go live at the same time.</p></div>
+      <div class="tl"><b>After proof</b><h4>Limited automation</h4><p>Only high confidence, low risk categories can route automatically. Everything else stays as a suggestion or a hand off.</p></div>
+    </div>
+    <div class="two" style="margin-top:12px">
+      <div class="list-card"><h4>Guardrails I would not skip</h4><ul><li>Never send a customer facing reply without human approval in version one</li><li>Never act on low confidence without saying what is missing</li><li>Always show the citation, not just the answer</li><li>Never auto close a ticket where a customer disputes a Risk Score or an intelligence assessment. That needs a human who can look at the underlying evidence</li><li>Always keep a human override that is faster than ignoring the agent</li></ul></div>
+      <div class="list-card"><h4>What success looks like</h4><ul><li>Correct routing rate rises week over week across Portal, API, and integration tickets</li><li>Time to first assignment falls</li><li>Reopen rate does not rise</li><li>Engineers keep using Accept and Edit instead of ignoring the note</li></ul></div>
+    </div>
+  </section>
+
+  <section id="code">
+    <div class="sec-head">
+      <h2>The write back to Zendesk, in plain terms</h2>
+      <p>The agent does not need special access to be useful. It reads the ticket, prepares a structured suggestion, and writes one private comment. That keeps the surface area small and auditable.</p>
+    </div>
+    <pre class="code">on_ticket_created(ticket_id):
+    ticket = zendesk.get_ticket(ticket_id)
+    context = retrieve(ticket.subject, ticket.body, ticket.org)
+    decision = model.classify(ticket, context)
+    # decision contains team, priority, category,
+    # confidence, reasoning, and citations
+
+    log_decision(ticket_id, ticket, context, decision)
+
+    if decision.confidence &lt; 0.55:
+        note = build_handoff_note(decision, missing=decision.missing)
+    else:
+        note = build_suggestion_note(decision)
+
+    zendesk.add_private_comment(ticket_id, note)
+    # Zendesk API: update ticket with a comment
+    # where public is set to false
+
+    wait_for_engineer_feedback(ticket_id)
+    # accept, edit, or reject is logged against
+    # the same decision trace for weekly review</pre>
+  </section>
+
+  <section>
+    <div class="pitch">
+      <h3>How I would explain this in the interview</h3>
+      <p>Jimmy is right to be cautious, because trust comes from feedback, not from a good demo. I would start in shadow mode, where the agent suggests a team, a priority, and an article, with a citation and a confidence score, and an engineer accepts, edits, or rejects it with a reason code. I would log every decision with the ticket id, the docs it pulled, and what the engineer did next, so I can query the rejects and find the pattern. That holds whether the pattern is Portal access tickets routed to the wrong team, a stale Splunk integration guide, or vague Risk Score questions the agent should have handed off. I fix that prompt or that source, raise the threshold for low confidence cases, and review the top rejects with engineers every week, so they can see their corrections actually change the agent. That is also the conversation I would want with support leadership, with the API and integrations engineers, and with anyone building AI tooling for the team: what did the agent get wrong, how do we know, and what changed because an engineer said so.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built by Collin Lawton as a working demo of a Zendesk triage agent design for a Recorded Future support queue. All tickets, customers, and articles on this page are sample demo content created for illustration, based on public Recorded Future product areas such as the Portal, the Connect API, SIEM and SOAR integrations, and Intelligence Cards. No customer data is used, no Recorded Future internal data is used, and no live Zendesk account is connected.</p>
+    <p>My background for this work: ten plus years in technical support engineering across healthcare SaaS and cloud platforms, with deep Zendesk experience including administration, workflows, routing, and reporting, plus hands on work with retrieval over internal docs and AI assisted support tooling, including API and integration troubleshooting.</p>
+  </footer>
+</div>
+
+<script>
+var tickets = [
+  {
+    id: 2401, subject: "All analysts locked out of the Portal after our Okta change", requester: "Maya Patel", org: "Enterprise Bank • Security Operations", time: "8 min ago", priorityLabel:"P1", pClass:"",
+    body: "Starting around 7:40 AM ET none of our 22 analysts can sign in to the Recorded Future Portal. After Okta, the page loops back to the sign in screen with no error. Our SOC is in the middle of an active investigation and is working without threat context until this is fixed. Our identity team rolled a new SAML signing certificate over the weekend.",
+    team: "Identity and Access", priority: "P1 • Urgent", category: "Portal SSO and SAML", confidence: 94,
+    steps: [
+      ["Reading the ticket", "Found a total Portal sign in failure for every analyst at one customer, during an active investigation, right after an identity provider change."],
+      ["Searching the knowledge base", "Matched Portal SAML troubleshooting and the signing certificate rollover checklist."],
+      ["Checking similar solved tickets", "Three similar cases were caused by a new IdP signing certificate that had not been updated on the service provider side, or by an ACS URL mismatch."],
+      ["Classifying and prioritizing", "Loss of Portal access for a whole SOC during an active investigation points to urgent priority and the identity team."]
+    ],
+    reasons: [
+      "<strong>Scope is the whole analyst team,</strong> not a single user password issue.",
+      "<strong>Customer impact is immediate and operational:</strong> a SOC is investigating without threat intelligence context.",
+      "<strong>The ticket names its own likely cause:</strong> a SAML certificate rollover over the weekend, which matches past solved cases word for word in pattern."
+    ],
+    kbTitle: "Portal SAML SSO troubleshooting and certificate rollover",
+    kbText: "Covers SAML response checks, updating the IdP signing certificate, Entity ID and ACS URL matching, and clock skew. This is the collection the agent searches first for Portal access tickets.",
+    note: "Agent suggestion: route to Identity and Access as P1. This looks like a SAML failure after a certificate rollover affecting the whole SOC, not individual password resets. Start with the certificate update and ACS checks before asking analysts to clear cache.",
+    noteList: ["First checks: new IdP signing certificate loaded on our side, SAML response, Entity ID and ACS URL match", "Ask for: IdP name, exact time of first failure, confirmation of the weekend certificate change", "Draft first reply is ready for engineer review in the reply editor. Do not send without review."],
+    draft: "We are treating this as urgent and routing it to our identity team now.",
+    trace: "ticket_id: 2401\nproduct_area: Portal\nteam: Identity and Access\npriority: P1\nconfidence: 0.94\ndocs_retrieved: [portal_saml_troubleshooting, cert_rollover_checklist]\nengineer_action: pending\noutcome: pending"
+  },
+  {
+    id: 2402, subject: "Splunk integration stopped pulling indicators and the API returns 429", requester: "Devon Lee", org: "National Retailer • Threat Detection", time: "22 min ago", priorityLabel:"P2", pClass:"p2",
+    body: "Our Recorded Future integration in Splunk stopped ingesting indicators around 2 AM ET. The Connect API is returning 429 responses, retries are queued, and we are now about six hours behind, so our detection rules are running on stale intelligence. The integration polls at about 800 requests per minute at peak. Can you confirm our API limit and whether a temporary increase is possible today?",
+    team: "API and Integrations", priority: "P2 • High", category: "Connect API and Splunk Integration", confidence: 91,
+    steps: [
+      ["Reading the ticket", "Found a clear error code, a start time, a named integration, polling volume, and a growing backlog of intelligence data."],
+      ["Searching the knowledge base", "Matched Connect API rate limit guidance and the Splunk integration guide, including polling interval settings."],
+      ["Checking similar solved tickets", "Similar cases were resolved by confirming the token quota for the account, lengthening the polling interval, and advising backoff so retries stopped compounding the backlog."],
+      ["Classifying and prioritizing", "A production detection integration is degraded and falling behind, but the customer platform is still running. That points to P2."]
+    ],
+    reasons: [
+      "<strong>Error code 429 is explicit</strong> and maps directly to Connect API rate limit guidance.",
+      "<strong>The impact is concrete:</strong> detection rules running on intelligence that is six hours stale.",
+      "<strong>The request is specific and answerable:</strong> confirm the limit for this account and assess a temporary increase."
+    ],
+    kbTitle: "Connect API rate limits, polling intervals, and the Splunk integration guide",
+    kbText: "Explains API token quotas by license, recommended polling intervals for the Splunk integration, retry with backoff, and what support needs to assess a temporary increase.",
+    note: "Agent suggestion: route to API and Integrations as P2. The ticket gives a clean signal: 429 responses from the Connect API, a named Splunk integration, stated polling volume, and a backlog that grows while retries pile up. Confirm the token quota first, then advise on polling interval and backoff while the increase is assessed.",
+    noteList: ["First checks: API token quota and usage for this account since 2 AM, polling interval set in the Splunk integration", "Ask for: which data sets the integration polls, and whether polling changed recently", "Watch for: retry behavior making the backlog and the rate limit worse at the same time"],
+    draft: "Routing to our API and integrations team to confirm your limit and assess a temporary increase.",
+    trace: "ticket_id: 2402\nproduct_area: API and Integrations\nteam: API and Integrations\npriority: P2\nconfidence: 0.91\ndocs_retrieved: [connect_api_rate_limits, splunk_integration_guide]\nengineer_action: pending\noutcome: pending"
+  },
+  {
+    id: 2403, subject: "Renewal invoice shows two extra Portal licenses we did not add", requester: "Jordan Ellis", org: "Healthcare System • Vendor Management", time: "41 min ago", priorityLabel:"P3", pClass:"p3",
+    body: "Hi, our renewal invoice lists 24 Portal licenses but we only have 22 analysts. We did add two contractors last quarter and removed them about three weeks later. Can you check whether that explains the extra licenses and adjust if needed? No rush, we just want it correct before the renewal is signed next week.",
+    team: "Billing and Licensing", priority: "P3 • Normal", category: "Licensing and Renewal", confidence: 88,
+    steps: [
+      ["Reading the ticket", "Found a licensing discrepancy with a clear timeline and no service impact."],
+      ["Searching the knowledge base", "Matched Portal license proration and contractor license guidance."],
+      ["Checking similar solved tickets", "Similar cases were explained by prorated licenses for users who were active during part of the term."],
+      ["Classifying and prioritizing", "The renewal is due next week and Portal access is unaffected, so normal priority fits."]
+    ],
+    reasons: [
+      "<strong>Topic is clearly licensing,</strong> with license count and renewal timing stated.",
+      "<strong>No outage, access loss, or data issue</strong> is reported.",
+      "<strong>Customer gives a plausible cause</strong> that the licensing team can verify quickly in the account history."
+    ],
+    kbTitle: "How Portal license changes and proration appear on a renewal invoice",
+    kbText: "Explains mid term adds and removals, proration lines on a renewal, and what the licensing team needs to adjust an invoice.",
+    note: "Agent suggestion: route to Billing and Licensing as P3. Likely prorated licenses from the two contractors who were active for part of the term. The licensing team should verify license history before adjusting anything.",
+    noteList: ["First checks: license history for the current term, contractor add and removal dates", "Ask for: nothing yet. The ticket already gives the timeline needed", "If proration does not explain it, escalate inside Billing and Licensing for a renewal review"],
+    draft: "Thanks for flagging this. Our licensing team will verify the license history for this term.",
+    trace: "ticket_id: 2403\nproduct_area: Licensing\nteam: Billing and Licensing\npriority: P3\nconfidence: 0.88\ndocs_retrieved: [portal_license_proration_guide]\nengineer_action: pending\noutcome: pending"
+  },
+  {
+    id: 2404, subject: "Risk Score for a supplier looks wrong", requester: "Sam Rivera", org: "Manufacturer • Third Party Risk Team", time: "1 hr ago", priorityLabel:"Review", pClass:"p3",
+    body: "The Risk Score for one of our suppliers does not look right since yesterday. The number seems off. Can someone look?",
+    team: "Hand off to human", priority: "Needs review", category: "Unclear • More info needed", confidence: 36,
+    steps: [
+      ["Reading the ticket", "Found no supplier name, no domain, no Intelligence Card link, no current score, and no score the customer expected to see."],
+      ["Searching the knowledge base", "Search returned Risk Score methodology content, but with no entity named there is no way to know if any of it applies to this case."],
+      ["Checking similar solved tickets", "No close match. Similar vague score questions needed the entity identified before anyone could check the underlying evidence."],
+      ["Classifying and prioritizing", "Confidence is below the threshold, so the agent hands off instead of guessing a team or citing methodology it cannot tie to this supplier."]
+    ],
+    reasons: [
+      "<strong>Signal is too thin to route safely:</strong> no entity, no domain, and no example of what changed.",
+      "<strong>A Risk Score dispute is a judgment call:</strong> it turns on the evidence behind one specific Intelligence Card, which the ticket does not identify.",
+      "<strong>This is the trust case:</strong> a hand off with a clear ask is better than a confident guess that sends a risk team to the wrong place."
+    ],
+    kbTitle: "No strong article match",
+    kbText: "The agent found methodology content it could cite in general, but nothing it can tie to this supplier with confidence. It will not invent that link. The note asks for the missing details instead.",
+    note: "Agent hand off: confidence is too low to route this ticket. The note does not guess a team and does not cite Risk Score methodology for an unnamed entity. It asks the first responder to collect the supplier name and domain, the Intelligence Card link, and the score shown versus the score expected, then rerun triage.",
+    noteList: ["Ask for: supplier legal name and domain, Intelligence Card link, score shown and score expected, screenshot if available", "Do not route yet based on this ticket alone", "Rerun the agent after the customer replies with the entity details"],
+    draft: "Could you share the supplier name and the Intelligence Card you are looking at so we can check the right score?",
+    trace: "ticket_id: 2404\nproduct_area: Intelligence Data\nteam: handoff\npriority: needs_review\nconfidence: 0.36\ndocs_retrieved: []\nengineer_action: pending\noutcome: pending\nreason_for_handoff: insufficient_context_no_entity_named"
+  }
+];
+
+var current = 0;
+var feedbackCount = 0;
+var queueEl = document.getElementById("queue");
+var subjectEl = document.getElementById("tSubject");
+var metaEl = document.getElementById("tMeta");
+var bodyEl = document.getElementById("tBody");
+var stepsEl = document.getElementById("steps");
+var resultEl = document.getElementById("result");
+var decisionEl = document.getElementById("decision");
+var reasonEl = document.getElementById("reasonList");
+var kbEl = document.getElementById("kbBox");
+var noteTextEl = document.getElementById("noteText");
+var noteListEl = document.getElementById("noteList");
+var traceBox = document.getElementById("traceBox");
+var runStatus = document.getElementById("runStatus");
+var fbLog = document.getElementById("fbLog");
+
+function renderQueue(){
+  queueEl.innerHTML = "<h4>New tickets • 4 waiting</h4>";
+  tickets.forEach(function(t,i){
+    var b=document.createElement("button");
+    b.className="ticket-btn"+(i===current?" active":"");
+    b.innerHTML="<strong>#"+t.id+" "+t.subject+"<span class='badge "+t.pClass+"'>"+t.priorityLabel+"</span></strong><span>"+t.org+" • "+t.time+"</span>";
+    b.addEventListener("click",function(){ selectTicket(i); });
+    queueEl.appendChild(b);
+  });
+}
+function selectTicket(i){
+  current=i;
+  var t=tickets[i];
+  subjectEl.textContent="#"+t.id+" • "+t.subject;
+  metaEl.innerHTML="<span>Requester: <strong>"+t.requester+"</strong></span><span>Organization: "+t.org+"</span><span>Created: "+t.time+"</span><span>Status: New</span>";
+  bodyEl.textContent=t.body;
+  stepsEl.classList.remove("show"); stepsEl.innerHTML="";
+  resultEl.classList.remove("show");
+  traceBox.classList.remove("show");
+  fbLog.classList.remove("show");
+  document.querySelectorAll(".fb-btn").forEach(function(x){x.classList.remove("selected")});
+  runStatus.textContent="Agent is idle. It will suggest only and will not route in shadow mode.";
+  renderQueue();
+}
+function runAgent(){
+  var t=tickets[current];
+  resultEl.classList.remove("show");
+  traceBox.classList.remove("show");
+  stepsEl.innerHTML="";
+  stepsEl.classList.add("show");
+  runStatus.textContent="Agent is working. Reading, retrieving, and reasoning in order.";
+  document.getElementById("runBtn").disabled=true;
+  t.steps.forEach(function(s,i){
+    var d=document.createElement("div"); d.className="step"; d.id="step"+i;
+    d.innerHTML="<span class='dot'>"+(i+1)+"</span><div><strong>"+s[0]+"</strong><small>"+s[1]+"</small></div>";
+    stepsEl.appendChild(d);
+  });
+  var idx=0;
+  function next(){
+    if(idx>0){ var prev=document.getElementById("step"+(idx-1)); prev.classList.remove("active"); prev.classList.add("done"); prev.querySelector(".dot").textContent="✓"; }
+    if(idx>=t.steps.length){ showResult(); return; }
+    var cur=document.getElementById("step"+idx); cur.classList.add("active");
+    idx++; setTimeout(next, 650);
+  }
+  next();
+}
+function showResult(){
+  var t=tickets[current];
+  document.getElementById("runBtn").disabled=false;
+  runStatus.textContent = t.confidence < 55 ? "Done. Confidence was low, so the agent handed off instead of routing." : "Done. Internal note is ready for engineer review below.";
+  decisionEl.innerHTML =
+    "<div><label>Suggested team</label><strong>"+t.team+"</strong></div>"+
+    "<div><label>Priority</label><strong>"+t.priority+"</strong></div>"+
+    "<div><label>Category</label><strong>"+t.category+"</strong></div>"+
+    "<div><label>Confidence</label><strong>"+t.confidence+"%</strong><div class='conf-bar'><div class='conf-fill' style='width:"+t.confidence+"%'></div></div></div>";
+  reasonEl.innerHTML = t.reasons.map(function(r){return "<li>"+r+"</li>"}).join("");
+  kbEl.innerHTML = "<strong>Cited source: "+t.kbTitle+"</strong><p>"+t.kbText+"</p>";
+  noteTextEl.textContent = t.note;
+  noteListEl.innerHTML = t.noteList.map(function(n){return "<li>"+n+"</li>"}).join("");
+  traceBox.textContent = t.trace;
+  resultEl.classList.add("show");
+  resultEl.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+document.getElementById("runBtn").addEventListener("click", runAgent);
+document.getElementById("traceBtn").addEventListener("click", function(){
+  var t=tickets[current];
+  traceBox.textContent=t.trace + "\n\nWhat this trace lets you do:\nQuery by ticket id, team, confidence, and engineer action.\nGroup rejects by reason code to find the pattern to fix.";
+  traceBox.classList.toggle("show");
+});
+document.querySelectorAll(".fb-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".fb-btn").forEach(function(x){x.classList.remove("selected")});
+    btn.classList.add("selected");
+    feedbackCount++;
+    document.getElementById("mAccept").textContent = feedbackCount;
+    var t=tickets[current];
+    fbLog.innerHTML = "<strong>Feedback logged for ticket #"+t.id+": "+btn.getAttribute("data-fb")+".</strong><br>This action is saved against the decision trace for ticket #"+t.id+" and would appear in the weekly reject review. In a live system the next step is to group this reason with others from the same week and fix the pattern it points to.";
+    fbLog.classList.add("show");
+  });
+});
+selectTicket(0);
+</script>
+</body>
+</html>
